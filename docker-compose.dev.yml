@@ -1,0 +1,34 @@
+version: '3.4'
+
+services:
+  traefik:
+    container_name: "traefik"
+    image: traefik:v2.2
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    command:
+      # - "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+  app-demo:
+    container_name: "app-demo"
+    image: app-demo
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    environment:
+      NODE_ENV: production
+    # ports:
+    #   - 3000
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.app-demo.rule=Host(`app-demo.localhost`)"
+      - "traefik.http.routers.app-demo.entrypoints=web"

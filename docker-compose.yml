@@ -1,0 +1,10 @@
+version: '3.7'
+
+services:
+  app-demo:
+    image: app-demo
+    build: .
+    environment:
+      NODE_ENV: production
+    ports:
+      - 3000
