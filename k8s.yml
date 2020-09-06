@@ -1,3 +1,32 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-demo
+spec:
+  selector:
+    app: app-demo
+  type: ClusterIP
+  ports:
+  - name: app-demo-port
+    port: 3000
+    targetPort: 3000
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-demo-configmap
+data:
+  node.env: production
+  game.properties: |
+    enemies=aliens
+    lives=3
+    enemies.cheat=true
+    enemies.cheat.level=noGoodRotten
+  ui.properties: |
+    color.good=purple
+    color.bad=yellow
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -6,7 +35,7 @@ spec:
   selector:
     matchLabels:
       app: app-demo
-  replicas: 1
+  replicas: 2
   strategy:
     rollingUpdate:
       maxSurge: 1
@@ -42,14 +71,21 @@ spec:
           timeoutSeconds: 10
         env:
         - name: NODE_ENV
-          value: production       
+          valueFrom:
+            configMapKeyRef:
+              name: app-demo-configmap
+              key: node.env
         ports:
         - containerPort: 3000
           name: app-demo
         volumeMounts:
-        - mountPath: /data
-          name: data
+          - name: app-demo-volume
+            mountPath: /etc/config # full path: /etc/config/app.properties
       volumes:
-        - name: data
-          emptyDir: {}
+        - name: app-demo-volume
+          configMap:
+            name: app-demo-configmap
+            items:
+              - key: game.properties
+                path: app.properties
       restartPolicy: Always
