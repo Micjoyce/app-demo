@@ -1,10 +1,11 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: app-demo
-  labels:
-    name: app-demo
 spec:
+  selector:
+    matchLabels:
+      app: app-demo
   strategy:
     rollingUpdate:
       maxSurge: 1
@@ -13,10 +14,11 @@ spec:
   template:
     metadata:
       labels:
-        name: app-demo
+        app: app-demo
     spec:
       containers:
       - image: micjoycexu90/app-demo:v0.0.1
+        imagePullPolicy: IfNotPresent
         name: app-demo
         resources:
           requests:
@@ -50,4 +52,3 @@ spec:
         - name: data
           emptyDir: {}
       restartPolicy: Always
-      imagePullPolicy: IfNotPresent
